@@ -6,8 +6,6 @@ import './SignerHolder.sol';
 contract SignatureChecker is SignerHolder {
     bytes constant SIGNED_MESSAGE_PREFIX = "\x19Ethereum Signed Message:\n32";
 
-    mapping(bytes32 => bool) signatureUsed;
-
     function withPrefix(bytes32 contentHash) public pure returns (bytes32) {
         return keccak256(SIGNED_MESSAGE_PREFIX, contentHash);
     }
