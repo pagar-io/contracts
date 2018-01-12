@@ -4,35 +4,44 @@ import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 import './interfaces/IGameSettings.sol';
 
 contract GameSettings is IGameSettings, Ownable {
-    function getGameSettings() public returns (
+    function getGameSettings() public constant returns (
         uint _minDeposit,
         uint _maxDeposit,
-        uint _ticketTtl,
-        uint _joinFee
+        uint _ticketTtlSeconds,
+        uint _joinFeePercentage,
+        uint _minFee,
+        uint _maxFee
     ) {
-        return (minDeposit, maxDeposit, ticketTtl, joinFee);
+        return (minDeposit, maxDeposit, ticketTtlSeconds, joinFeePercentage, minFee, maxFee);
     }
 
     uint public maxDeposit;
     uint public minDeposit;
-    uint public ticketTtl;
-    uint public joinFee;
+    uint public ticketTtlSeconds;
 
-    function GameSettings(uint _minDeposit, uint _maxDeposit, uint _ticketTtl, uint _joinFee) public {
-        updateSettings(_minDeposit, _maxDeposit, _ticketTtl, _joinFee);
+    uint public joinFeePercentage;
+    uint public minFee;
+    uint public maxFee;
+
+    function GameSettings(uint _minDeposit, uint _maxDeposit, uint _ticketTtlSeconds, uint _joinFeePercentage, uint _minFee, uint _maxFee) public {
+        updateSettings(_minDeposit, _maxDeposit, _ticketTtlSeconds, _joinFeePercentage, _minFee, _maxFee);
     }
 
-    event LogSettingsUpdate(uint minDeposit, uint maxDeposit, uint ticketTtl, uint joinFee);
+    event LogSettingsUpdate(uint minDeposit, uint maxDeposit, uint ticketTtlSeconds, uint joinFeePercentage, uint minFee, uint maxFee);
 
-    function updateSettings(uint _minDeposit, uint _maxDeposit, uint _ticketTtl, uint _joinFee) onlyOwner public {
+    function updateSettings(uint _minDeposit, uint _maxDeposit, uint _ticketTtlSeconds, uint _joinFeePercentage, uint _minFee, uint _maxFee) onlyOwner public {
         require(_minDeposit <= _maxDeposit);
+        require(_minFee <= _maxFee);
+        require(_joinFeePercentage <= 100 && _joinFeePercentage >= 0);
 
         maxDeposit = _maxDeposit;
         minDeposit = _minDeposit;
-        ticketTtl = _ticketTtl;
-        joinFee = _joinFee;
+        ticketTtlSeconds = _ticketTtlSeconds;
+        joinFeePercentage = _joinFeePercentage;
+        minFee = _minFee;
+        maxFee = _maxFee;
 
-        LogSettingsUpdate(minDeposit, maxDeposit, ticketTtl, joinFee);
+        LogSettingsUpdate(minDeposit, maxDeposit, ticketTtlSeconds, joinFeePercentage, minFee, maxFee);
     }
 
 }
