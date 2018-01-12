@@ -30,6 +30,9 @@ contract Game is KnowsTime, Pausable, OneTimeUseSignatures {
     // the next player id is incremented
     uint public nextPlayerId;
 
+    // collected fees
+    uint public collectedFees;
+
     // get the hash that is signed for a game ticket
     function getTicketHash(uint gameId, uint deposit, uint ticketTimeSeconds, uint ticketNonce) public pure returns (bytes32) {
         return keccak256(gameId, deposit, ticketTimeSeconds, ticketNonce);
@@ -52,8 +55,18 @@ contract Game is KnowsTime, Pausable, OneTimeUseSignatures {
         joinFee = boundedPercentage(deposit, joinFeePercentage, minFee, maxFee);
     }
 
+    function withdrawFees() public onlyOwner {
+        withdrawFees(collectedFees);
+    }
+
+    function withdrawFees(uint amount) public onlyOwner {
+        require(amount <= collectedFees);
+        collectedFees = 0;
+        msg.sender.transfer(amount);
+    }
+
     // apply settings and return the resulting receipt
-    function applySettings(uint paidWei, uint deposit, uint ticketTimeSeconds) internal returns (uint joinFee, uint refund) {
+    function applySettings(uint paidWei, uint deposit, uint ticketTimeSeconds) internal view returns (uint joinFee, uint refund) {
         // use the settings to configure the behavior of this method
         var (minDeposit, maxDeposit, ticketTtlSeconds, joinFeePercentage, minFee, maxFee) = settings.getGameSettings();
 
@@ -84,6 +97,8 @@ contract Game is KnowsTime, Pausable, OneTimeUseSignatures {
         var (joinFee, refund) = applySettings(msg.value, deposit, ticketTimeSeconds);
         
         uint playerId = addPlayer(gameId, deposit, owner, joinFee, refund);
+
+        collectedFees = collectedFees.add(joinFee);
 
         // return any excess wei
         if (refund > 0) {
