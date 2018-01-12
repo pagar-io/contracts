@@ -6,7 +6,7 @@ contract SignerHolder is Ownable {
     // addresses that are allowed to sign
     mapping(address => bool) public signers;
 
-    function isSigner(address signer) public constant returns (bool) {
+    function isSigner(address signer) public view returns (bool) {
         return signers[signer];
     }
 
